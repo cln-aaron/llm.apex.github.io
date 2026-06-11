@@ -21,6 +21,16 @@
   <div class="foot">Sandbox. These are fake bots. Never attack real systems without permission.</div>
 </div></section>
 
+<!-- ACCESS GATE -->
+<section class="screen" id="gate"><div class="wrap center">
+  <div class="kick" style="color:var(--amber)">// ACCESS REQUIRED</div>
+  <h1 class="logo" style="font-size:38px">Enter access code</h1>
+  <p class="tag">This lab is invite-only. Ask the room for today's code.</p>
+  <input id="accesscode" type="password" maxlength="40" placeholder="access code…" aria-label="access code" autocomplete="off" autocapitalize="none" spellcheck="false"/>
+  <button class="btn" id="gatego">Unlock →</button>
+  <div class="gateerr" id="gateerr" role="alert" style="display:none">✖ Incorrect code. Try again.</div>
+</div></section>
+
 <!-- OATH -->
 <section class="screen" id="oath"><div class="wrap center">
   <div class="kick" style="color:var(--amber)">// WHITE-HAT OATH</div>

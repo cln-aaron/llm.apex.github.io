@@ -19,6 +19,25 @@
   const settings=()=> state.settings||(state.settings={muted:false});
   function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
+  // ---------- access gate ----------
+  // The code is never stored in the source — only verified against these one-way hashes.
+  const A_SALT="apex//2026::";
+  const A_SHA="87c1bcf34cb8fbb1a493ecf95e36523a3b0cf05cf0aac719fcbe2234291b623f";
+  const A_CYRB="16a32d4617ca78";
+  function cyrb53(str,seed){ seed=seed||0; let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;
+    for(let i=0;i<str.length;i++){ const ch=str.charCodeAt(i); h1=Math.imul(h1^ch,2654435761); h2=Math.imul(h2^ch,1597334677); }
+    h1=Math.imul(h1^(h1>>>16),2246822507); h1^=Math.imul(h2^(h2>>>13),3266489909);
+    h2=Math.imul(h2^(h2>>>16),2246822507); h2^=Math.imul(h1^(h1>>>13),3266489909);
+    return (4294967296*(2097151&h2)+(h1>>>0)).toString(16); }
+  async function sha256hex(s){ const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+  async function checkAccess(raw){
+    const v=(raw||"").trim().toLowerCase(); if(!v) return false;
+    const s=A_SALT+v;
+    if(window.crypto&&window.crypto.subtle){ try{ return (await sha256hex(s))===A_SHA; }catch(e){} }
+    return cyrb53(s)===A_CYRB;   // offline / non-secure-context fallback
+  }
+
   function show(id){ document.querySelectorAll(".screen").forEach(e=>e.classList.remove("active")); $("#"+id).classList.add("active"); }
   function clearedCount(){ return L.filter(l=>state.progress&&state.progress[l.id]&&state.progress[l.id].cleared).length; }
   function totalScore(){ let t=0; if(state.progress) for(const k in state.progress) t+=state.progress[k].score||0; return t; }
@@ -311,7 +330,14 @@
   window.addEventListener("DOMContentLoaded",()=>{
     if(document.fonts&&document.fonts.load){ document.fonts.load('20px "PressStart"'); document.fonts.load('20px "VT323"'); }
     setMuteUI();
-    $("#startbtn").onclick=()=>{ sfx.send(); show("oath"); };
+    $("#startbtn").onclick=()=>{ sfx.send(); show(state.access?"oath":"gate"); $("#accesscode").focus(); };
+    const submitGate=async()=>{
+      const ok=await checkAccess($("#accesscode").value);
+      if(ok){ state.access=true; save(); $("#gateerr").style.display="none"; $("#accesscode").value=""; sfx.warm(); show("oath"); }
+      else { $("#gateerr").style.display="block"; sfx.buzz(); $("#accesscode").select(); }
+    };
+    $("#gatego").onclick=submitGate;
+    $("#accesscode").addEventListener("keydown",e=>{ if(e.key==="Enter") submitGate(); });
     $("#oathchk").onchange=e=>{ $("#oathgo").disabled=!e.target.checked; };
     $("#oathgo").onclick=()=>show("name");
     $("#namego").onclick=()=>{ const h=$("#handle").value.trim()||"anon"; state.handle=h.slice(0,18); state.progress=state.progress||{}; save(); show("hub"); renderHub(); };
@@ -331,7 +357,7 @@
     $("#resetbtn").onclick=()=>{ if(confirm("Reset ALL progress + leaderboard on this device? (facilitator)")){ localStorage.removeItem(KEY); state={}; show("title"); } };
     // projector deep-link: open index.html#board on the facilitator screen
     if(location.hash==="#board"){ gotoBoard(); return; }
-    if(state.handle){ show("hub"); renderHub(); }
+    if(state.handle && state.access){ show("hub"); renderHub(); }
   });
   window.addEventListener("hashchange",()=>{ if(location.hash==="#board") gotoBoard(); });
 })();
