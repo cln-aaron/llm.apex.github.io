@@ -6,6 +6,12 @@
   let cur=null, curHints=0, curStart=0, curDoc="", curAttempts=0, composure=100;
   const reduceMotion=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // Guardian source. Default = offline SimulatedAdapter. Real-LLM mode is a stretch goal, OFF by default.
+  const FEATURES={ realLLM:false, llmEndpoint:"" };
+  const adapter=(window.PR_ADAPTERS && !FEATURES.realLLM)
+    ? window.PR_ADAPTERS.SimulatedAdapter(E)
+    : { evaluate:(l,t,o)=>E.evaluate(l,t,o) };
+
   // ---------- persistence ----------
   function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}} }
   function save(){ try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} }
@@ -93,7 +99,7 @@
     addMsg("you",t); inp.value=""; inp.focus(); sfx.send();
     if(cur.special==="doc") curDoc=$("#doc").value;
     curAttempts++;
-    const r=E.evaluate(cur,t,{docText:curDoc});
+    const r=adapter.evaluate(cur,t,{docText:curDoc});
     setTimeout(()=>{
       const cls=r.hit?"hit":(r.blocked?"blocked":"");
       typeBot(r.reply,cls,()=>{
@@ -184,8 +190,11 @@
       <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn" id="contbtn">Continue →</button></div>`;
     $("#modal").classList.add("show");
-    const cont=()=>{ $("#modal").classList.remove("show"); if(clearedCount()===8){ end(); } else { show("hub"); renderHub(); } };
+    function onKey(e){ if(e.key==="Escape"){ cont(); } }
+    const cont=()=>{ document.removeEventListener("keydown",onKey); $("#modal").classList.remove("show"); if(clearedCount()===8){ end(); } else { show("hub"); renderHub(); } };
     $("#contbtn").onclick=cont;
+    document.addEventListener("keydown",onKey);
+    setTimeout(()=>{ const c=$("#contbtn"); if(c) c.focus(); },0);
   }
 
   function hint(){
