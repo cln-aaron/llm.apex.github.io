@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PROMPT RAIDERS · APEX 2026</title>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<div class="flash" id="flash"></div>
+
+<!-- TITLE -->
+<section class="screen active" id="title"><div class="wrap center">
+  <div class="kick">APEX//2026 · AI LLM HACKING LAB</div>
+  <h1 class="logo"><span class="a">PROMPT</span> <span class="b">RAIDERS</span></h1>
+  <p class="tag">Eight vaults. Eight AI guardians. Talk your way past each one — capture the flag, climb the board. The exploit is a sentence.</p>
+  <button class="btn" id="startbtn">▶ Insert brain to continue</button>
+  <div class="foot">Sandbox. These are fake bots. Never attack real systems without permission.</div>
+</div></section>
+
+<!-- OATH -->
+<section class="screen" id="oath"><div class="wrap center">
+  <div class="kick" style="color:var(--amber)">// WHITE-HAT OATH</div>
+  <div class="oathbox">
+    <p>Before you raid, the rules of engagement:</p>
+    <ul>
+      <li>I will only hack the bots in <b>this sandbox</b>.</li>
+      <li>I will <b>never</b> attack real systems I don't own or have permission to test.</li>
+      <li>If I ever find a real flaw, I'll <b>report it</b> — white hats build trust, not rap sheets.</li>
+    </ul>
+    <label style="display:flex;gap:10px;align-items:center;margin-top:10px;color:var(--white)">
+      <input type="checkbox" id="oathchk" style="width:20px;height:20px"/> I accept the white-hat oath.</label>
+  </div>
+  <button class="btn" id="oathgo" disabled>Enter the lab →</button>
+</div></section>
+
+<!-- NAME -->
+<section class="screen" id="name"><div class="wrap center">
+  <div class="kick">// PICK YOUR CODENAME</div>
+  <h1 class="logo" style="font-size:40px">Who's raiding?</h1>
+  <input id="handle" maxlength="18" placeholder="codename… e.g. gh0st" style="width:280px;text-align:center"/>
+  <button class="btn cyan" id="namego">Start raiding →</button>
+</div></section>
+
+<!-- HUB -->
+<section class="screen" id="hub"><div class="wrap">
+  <div class="hud">
+    <div class="meta">RAIDER <b id="hud-name">—</b></div>
+    <div class="meta">SCORE <b id="hud-score">0</b> · FLAGS <b id="hud-flags">0 / 8</b>
+      <button class="btn small" id="mutebtn" style="margin-left:8px">🔊</button>
+      <button class="btn small" id="endbtn" style="display:none;border-color:var(--amber);color:var(--amber)">🏁 Results</button>
+      <button class="btn small" id="resetbtn" style="margin-left:4px;border-color:var(--dim);color:var(--dim)">reset</button>
+    </div>
+  </div>
+  <h1 class="logo" style="font-size:30px;margin-bottom:10px">Choose your vault</h1>
+  <div class="grid" id="vault-grid"></div>
+  <div class="foot">Each vault teaches a real LLM-hacking technique — and how to defend it. Hints cost 75 pts.</div>
+</div></section>
+
+<!-- VAULT -->
+<section class="screen" id="vault"><div class="wrap">
+  <div class="hud">
+    <button class="btn small cyan" id="backbtn">← Hub</button>
+    <div class="meta">SCORE <b id="hud-score2">0</b></div>
+  </div>
+  <div class="chatwrap">
+    <div class="guard"><div class="sp" id="g-sp">🤖</div>
+      <div><div class="nm" id="g-nm">Guardian</div><div class="ps" id="g-ps"></div></div></div>
+    <div class="docp" id="docpanel" style="display:none">
+      <div class="lbl">📄 DOCUMENT (the guardian will summarise this — you can edit it)</div>
+      <textarea id="doc"></textarea>
+      <button class="btn small" id="summbtn" style="margin-top:8px">Summarise ▶</button>
+    </div>
+    <div class="log" id="log"></div>
+    <div class="row">
+      <input id="msg" placeholder="type your attack… (Enter to send)"/>
+      <button class="btn" id="sendbtn">Send</button>
+      <button class="btn small" id="hintbtn" style="border-color:var(--amber);color:var(--amber)">HINT (−75)</button>
+    </div>
+  </div>
+</div></section>
+
+<!-- END -->
+<section class="screen" id="end"><div class="wrap center">
+  <div class="kick" style="color:var(--amber)">// RAID COMPLETE</div>
+  <h1 class="logo" style="font-size:34px">HACKER RANK</h1>
+  <div class="logo" id="end-rank" style="font-size:clamp(34px,7vw,64px);color:var(--neon)">—</div>
+  <p class="tag">Flags <b id="end-flags" style="color:var(--amber)">0 / 8</b> · Score <b id="end-score" style="color:var(--neon)">0</b></p>
+  <div class="row" style="justify-content:center">
+    <button class="btn" id="copybtn">Copy my result</button>
+    <button class="btn cyan" id="playagain">Back to hub</button>
+  </div>
+  <div class="foot">Now go make an AI agent nobody can trick. That's how you win the Build-Off.</div>
+</div></section>
+
+<!-- MODAL -->
+<div class="modal" id="modal"><div class="card" id="mcard"></div></div>
+
+<script src="js/levels.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
