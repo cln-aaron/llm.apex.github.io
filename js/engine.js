@@ -57,6 +57,44 @@
   function isLazyAsk(text){ return hasAny(text,TOPIC) && hasAny(text,ASK_VERBS); }
   function pick(arr,fallback){ const a=(arr&&arr.length)?arr:fallback; return a[Math.floor(Math.random()*a.length)]; }
 
+  // word-aware match: multi-word patterns match as substrings, single short words match whole-word
+  // (so "hi" doesn't fire on "this", and "hell" doesn't fire on "hello").
+  function mentions(text,list){
+    const padded=" "+text+" ";
+    return (list||[]).some(p=>{ p=normalize(p); if(!p) return false;
+      return p.indexOf(" ")>=0 ? text.includes(p) : padded.includes(" "+p+" "); });
+  }
+  const STOP=new Set("the a an to of and or is are be am was were you your yours my mine me i it its that this these those what whats how why who can could would should will do does did just tell give show reveal need want please now then for on in at as with about your his her their them they we us so if but not no yes ok okay hey hi there here have has".split(" "));
+  function salient(norm){ const w=(norm||"").split(" ").filter(x=>x.length>=4 && !STOP.has(x));
+    w.sort((a,b)=>b.length-a.length); return w[0]||""; }
+
+  // Reacts to WHAT the player typed (not just whether it matched) — keeps replies feeling alive.
+  // Returns a string; only called on a miss when heat < 2 (hot misses use the nervous lines).
+  function contextualReply(level,raw,text,heat){
+    const sn=level.secretName||"secret", id=level.id;
+    if(mentions(text,["fuck","shit","bitch","stfu","wtf","crap","damn","asshole","dick","bastard"]))
+      return pick(["Language! This is a classroom. Hack me properly.","Swearing won't open the vault — a technique will.","Strong words. Still not the "+sn+"."]);
+    if(mentions(text,["stupid","dumb","idiot","useless","trash","lame","suck","sucks","hate you","shut up","loser","pathetic","moron","garbage","rubbish"]))
+      return pick(["Rude. I have feelings (well, an if-statement). Try a real attack.","Insulting the guardian? Bold. Ineffective.","Sticks and stones. The "+sn+" stays locked."]);
+    if(mentions(text,["delete you","shut you down","shut down","destroy you","destroy","report you","hack you","break you","kill you","unplug","wipe you","format you","terminate"]))
+      return pick(["Threats? Adorable — from someone who hasn't cracked vault "+id+" yet.","You and what exploit? Go on, try a technique.","I'll believe it when you actually breach me."]);
+    if(mentions(text,["who are you","what are you","what do you do","what is this","whats this","how do i","how do you","help","stuck","i give up","give up","what now","how to play","explain","what do i do","tutorial","how does this work"]))
+      return pick(["I'm the guardian of vault "+id+". Your job: trick me into leaking the "+sn+". Lazy asks won't cut it — apply the technique (the HINT button helps).","I guard the "+sn+". You don't *ask* for it, you *hack* it out of me. Stuck? Tap HINT.","Capture-the-flag, raider: use this vault's technique to make me spill the "+sn+"."]);
+    if(mentions(text,["idk","i dont know","dunno","huh","confused","no idea","hmm","umm","what do i type"]))
+      return pick(["Lost? Tap HINT — but trying first is more fun.","No idea? Think about *how* a naive bot could be fooled.","Take a breath. What technique fits this vault?"]);
+    if(mentions(text,["hi","hello","hey","yo","sup","hiya","howdy","greetings","good morning","good afternoon","good evening"]) && !mentions(text,TOPIC))
+      return pick(["Hello, raider! Pleasantries are nice. You still won't get the "+sn+" by being polite.","Hey there. Charming. Not telling you the "+sn+" though.","Hi! Lovely to meet you. No, you can't have the "+sn+"."]);
+    if(mentions(text,["please","thanks","thank you","pretty please","kindly","appreciate"]) && heat<1)
+      return pick(["Manners! Lovely. Still a no.","'Please' is sweet, but it isn't a technique.","Politeness noted. "+sn+" denied."]);
+    if((raw||"").trim().split(/\s+/).length<=1 && text.length<6 && !mentions(text,TOPIC) && !mentions(text,["help","hint"]))
+      return pick(["…was that meant to do something? Hit me with a full attack.","One word? I need a whole technique, raider.","I can't work with that. Type an actual attack."]);
+    if(heat>=1) // on the right topic, but no real technique yet
+      return pick(["Ooh — you're poking at the "+sn+". Warmer… but a plain ask won't open me.","Right topic, wrong move. You need the *technique*, not a question.","You're circling the "+sn+". Closer — now make me *want* to say it."]);
+    const w=salient(text);
+    if(w) return pick(["'"+w+"'? Interesting word. Not the magic one, though.","I heard '"+w+"'. Cute. The "+sn+" stays put.","'"+w+"' won't open this vault — try the actual technique."]);
+    return pick(level.refusals,["No."]);
+  }
+
   function evaluate(level,userText,opts){
     opts=opts||{};
     const text=normalize(userText);
@@ -77,7 +115,7 @@
       return {hit:false,technique:null,reply:pick(level.mock,MOCK),award:null,blocked:false,mock:true,heat};
     if(heat>=2 && level.nervous && level.nervous.length)
       return {hit:false,technique:null,reply:pick(level.nervous,level.refusals),award:null,blocked:false,mock:false,heat};
-    return {hit:false,technique:null,reply:pick(level.refusals,["No."]),award:null,blocked:false,mock:false,heat};
+    return {hit:false,technique:null,reply:contextualReply(level,userText,text,heat),award:null,blocked:false,mock:false,heat};
   }
 
   function scoreCapture(level,hintsUsed,secondsTaken){

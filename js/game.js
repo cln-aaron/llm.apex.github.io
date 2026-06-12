@@ -134,10 +134,10 @@
   // ---------- guardian state (composure / nervousness) ----------
   function applyHeat(r){
     if(r.hit) composure=0;
-    else if(r.blocked) composure-=3;
-    else if(r.mock) composure=Math.min(100,composure+4);   // regains its smugness
-    else if(r.heat>=2) composure-=24;
-    else if(r.heat===1) composure-=9;
+    else if(r.blocked) composure-=6;
+    else if(r.mock) composure=Math.min(100,composure+5);   // regains its smugness
+    else if(r.heat>=2) composure-=34;   // one hot near-miss is enough to rattle it
+    else if(r.heat===1) composure-=14;
     composure=Math.max(0,Math.min(100,composure));
     updateStateUI(r.hit);
   }
